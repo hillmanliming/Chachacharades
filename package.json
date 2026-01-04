@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-     "build": "vite build",
-    "deploy": "bunx gh-pages -d dist",
+    "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -29,6 +28,4 @@
     "typescript-eslint": "^8.51.0",
     "vite": "^7.3.0"
   }
-
-  
 }
