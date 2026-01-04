@@ -4,4 +4,7 @@ export type Deck = {
   cards: string[];
 };
 
-export type GameStatus = "idle" | "playing" | "finished";
+export type Guess = {
+  word: string;
+  correct: boolean;
+};

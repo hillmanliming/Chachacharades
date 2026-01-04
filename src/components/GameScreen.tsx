@@ -7,13 +7,13 @@ type Props = {
 
 export function GameScreen({ card, timeLeft, onCorrect, onPass }: Props) {
   return (
-    <div className="container">
-      <h2>{timeLeft}s</h2>
-      <h1>{card}</h1>
+    <div className="screen landscape">
+      <div className="timer">{timeLeft}s</div>
+      <div className="card">{card}</div>
 
-      <div>
-        <button onClick={onPass}>✖</button>
-        <button onClick={onCorrect}>✔</button>
+      <div className="controls">
+        <button onClick={onPass}>Pass</button>
+        <button onClick={onCorrect}>Correct</button>
       </div>
     </div>
   );
