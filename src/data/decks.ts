@@ -203,6 +203,6 @@ export const decks: Deck[] = [
     id: "testing",
     name: "Dev testing",
     emoji: "🧪",
-    cards: ["A", "B", "C"],
+    cards: ["A", "B", "C", "D"],
   },
 ];
