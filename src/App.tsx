@@ -25,6 +25,14 @@ export default function App() {
       setTimeLeft((t) => {
         if (t <= 1) {
           clearInterval(timer);
+
+          // Add current card as "unanswered" if not already guessed
+          setGuesses((g) => {
+            const currentWord = cards[index];
+            if (g.some((x) => x.word === currentWord)) return g; // already guessed
+            return [...g, { word: currentWord, correct: false }];
+          });
+
           setStatus("finished");
           return 0;
         }
@@ -33,7 +41,7 @@ export default function App() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [status, countdown]);
+  }, [status, countdown, cards, index]);
 
   useEffect(() => {
     if (countdown === null) return;
