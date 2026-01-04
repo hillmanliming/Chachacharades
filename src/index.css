@@ -129,6 +129,12 @@ button {
   box-shadow: 4px 4px #005778;
   background-color: #e6e6e6;
   border: 3px solid #fc4c02;
+  color: black;
+}
+
+button:active,
+article:active {
+  transform: scale(0.98);
 }
 
 button:hover {
