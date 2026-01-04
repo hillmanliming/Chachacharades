@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { decks } from "./data/decks";
 import { shuffle } from "./utils/shuffle";
 import type { Deck, Guess } from "./types";
@@ -6,7 +6,7 @@ import { DeckLibrary } from "./components/DeckLibrary";
 import { GameScreen } from "./components/GameScreen";
 import { ResultScreen } from "./components/ResultScreen";
 
-const GAME_DURATION = 60; // in seconds
+const GAME_DURATION = 60; // seconds
 
 export default function App() {
   const [status, setStatus] = useState<"idle" | "playing" | "finished">("idle");
@@ -17,7 +17,10 @@ export default function App() {
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
   const [countdown, setCountdown] = useState<number | null>(3);
 
-  // Countdown effect
+  // 🔒 Persisted end time (this fixes the spam bug)
+  const endTimeRef = useRef<number | null>(null);
+
+  /* ---------------- Countdown (3 → 2 → 1) ---------------- */
   useEffect(() => {
     if (countdown === null) return;
 
@@ -28,32 +31,39 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [countdown]);
 
-  // Game timer
+  /* ---------------- Game timer (60s) ---------------- */
   useEffect(() => {
-    if (status !== "playing" || countdown !== null) return;
+    if (status !== "playing") return;
+    if (countdown !== null) return;
 
-    const timer = setInterval(() => {
-      setTimeLeft((t) => {
-        if (t <= 1) {
-          clearInterval(timer);
-          // Mark current card as incorrect if not guessed
-          setGuesses((g) => {
-            const currentWord = cards[index];
-            if (g.some((x) => x.word === currentWord)) return g;
-            return [...g, { word: currentWord, correct: false }];
-          });
-          setStatus("finished");
-          return 0;
-        }
-        return t - 1;
-      });
-    }, 1000);
+    // Initialize end time ONCE
+    if (endTimeRef.current === null) {
+      endTimeRef.current = Date.now() + GAME_DURATION * 1000;
+    }
 
-    return () => clearInterval(timer);
-  }, [status, countdown, cards, index]);
+    const interval = setInterval(() => {
+      const remainingMs = endTimeRef.current! - Date.now();
 
+      if (remainingMs <= 0) {
+        clearInterval(interval);
+        setTimeLeft(0);
+        setStatus("finished");
+        return;
+      }
+
+      // full seconds only
+      setTimeLeft(Math.ceil(remainingMs / 1000));
+    }, 250);
+
+    return () => clearInterval(interval);
+  }, [status, countdown]);
+
+  /* ---------------- Start game ---------------- */
   const startGame = (deck: Deck) => {
     if (!deck.cards.length) return;
+
+    endTimeRef.current = null; // 🔑 reset timer
+
     setSelectedDeck(deck);
     setCards(shuffle(deck.cards));
     setGuesses([]);
@@ -63,16 +73,22 @@ export default function App() {
     setStatus("playing");
   };
 
+  /* ---------------- Guess handler ---------------- */
   const handleGuess = (correct: boolean) => {
     setGuesses((g) => [...g, { word: cards[index], correct }]);
-    setIndex((i) => (i + 1 >= cards.length ? i : i + 1));
-    if (index + 1 >= cards.length) setStatus("finished");
+    setIndex((i) => (i + 1 < cards.length ? i + 1 : i));
+
+    if (index + 1 >= cards.length) {
+      setStatus("finished");
+    }
   };
 
-  if (status === "idle")
+  /* ---------------- Screens ---------------- */
+  if (status === "idle") {
     return <DeckLibrary decks={decks} onSelect={startGame} />;
+  }
 
-  if (status === "playing" && selectedDeck)
+  if (status === "playing" && selectedDeck) {
     return (
       <GameScreen
         card={cards[index]}
@@ -82,12 +98,14 @@ export default function App() {
         onPass={() => handleGuess(false)}
       />
     );
+  }
 
-  if (status === "finished")
+  if (status === "finished") {
     return (
       <ResultScreen
         guesses={guesses}
         onBackToLibrary={() => {
+          endTimeRef.current = null;
           setSelectedDeck(null);
           setGuesses([]);
           setCards([]);
@@ -98,6 +116,8 @@ export default function App() {
         }}
         onPlayAgain={() => {
           if (!selectedDeck) return;
+
+          endTimeRef.current = null;
           setCards(shuffle(selectedDeck.cards));
           setGuesses([]);
           setIndex(0);
@@ -107,6 +127,7 @@ export default function App() {
         }}
       />
     );
+  }
 
   return null;
 }
