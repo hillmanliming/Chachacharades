@@ -201,7 +201,7 @@ export const decks: Deck[] = [
   },
   {
     id: "testing",
-    name: "Testing",
+    name: "Dev testing",
     emoji: "🧪",
     cards: ["A", "B", "C"],
   },
