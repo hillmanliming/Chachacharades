@@ -6,7 +6,7 @@ import { DeckLibrary } from "./components/DeckLibrary";
 import { GameScreen } from "./components/GameScreen";
 import { ResultScreen } from "./components/ResultScreen";
 
-const GAME_DURATION = 2; // seconds
+const GAME_DURATION = 60; // seconds
 
 export default function App() {
   const [status, setStatus] = useState<"idle" | "playing" | "finished">("idle");
