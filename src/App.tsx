@@ -6,7 +6,7 @@ import { DeckLibrary } from "./components/DeckLibrary";
 import { GameScreen } from "./components/GameScreen";
 import { ResultScreen } from "./components/ResultScreen";
 
-const GAME_DURATION = 60; // seconds
+const GAME_DURATION = 2; // seconds
 
 export default function App() {
   const [status, setStatus] = useState<"idle" | "playing" | "finished">("idle");
@@ -17,7 +17,7 @@ export default function App() {
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
   const [countdown, setCountdown] = useState<number | null>(3);
 
-  // 🔒 Persisted end time (this fixes the spam bug)
+  // 🔒 Persisted end time
   const endTimeRef = useRef<number | null>(null);
 
   /* ---------------- Countdown (3 → 2 → 1) ---------------- */
@@ -31,12 +31,11 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [countdown]);
 
-  /* ---------------- Game timer (60s) ---------------- */
+  /* ---------------- Game timer ---------------- */
   useEffect(() => {
     if (status !== "playing") return;
     if (countdown !== null) return;
 
-    // Initialize end time ONCE
     if (endTimeRef.current === null) {
       endTimeRef.current = Date.now() + GAME_DURATION * 1000;
     }
@@ -46,23 +45,31 @@ export default function App() {
 
       if (remainingMs <= 0) {
         clearInterval(interval);
+
+        // ✅ ADD LAST SHOWN CARD AS WRONG (if not already guessed)
+        setGuesses((g) => {
+          const word = cards[index];
+          if (!word) return g;
+          if (g.length > index) return g; // already guessed
+          return [...g, { word, correct: false }];
+        });
+
         setTimeLeft(0);
         setStatus("finished");
         return;
       }
 
-      // full seconds only
       setTimeLeft(Math.ceil(remainingMs / 1000));
     }, 250);
 
     return () => clearInterval(interval);
-  }, [status, countdown]);
+  }, [status, countdown, cards, index]);
 
   /* ---------------- Start game ---------------- */
   const startGame = (deck: Deck) => {
     if (!deck.cards.length) return;
 
-    endTimeRef.current = null; // 🔑 reset timer
+    endTimeRef.current = null;
 
     setSelectedDeck(deck);
     setCards(shuffle(deck.cards));
