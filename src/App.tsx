@@ -17,8 +17,10 @@ export default function App() {
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
   const [countdown, setCountdown] = useState<number | null>(3);
 
-  // 🔒 Persisted end time
+  // 🔒 Persisted end time (fixes spam bug)
   const endTimeRef = useRef<number | null>(null);
+  // 🔒 Track if last card was added
+  const lastCardAddedRef = useRef(false);
 
   /* ---------------- Countdown (3 → 2 → 1) ---------------- */
   useEffect(() => {
@@ -31,11 +33,12 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [countdown]);
 
-  /* ---------------- Game timer ---------------- */
+  /* ---------------- Game timer (60s) ---------------- */
   useEffect(() => {
     if (status !== "playing") return;
     if (countdown !== null) return;
 
+    // Initialize end time ONCE
     if (endTimeRef.current === null) {
       endTimeRef.current = Date.now() + GAME_DURATION * 1000;
     }
@@ -45,31 +48,40 @@ export default function App() {
 
       if (remainingMs <= 0) {
         clearInterval(interval);
-
-        // ✅ ADD LAST SHOWN CARD AS WRONG (if not already guessed)
-        setGuesses((g) => {
-          const word = cards[index];
-          if (!word) return g;
-          if (g.length > index) return g; // already guessed
-          return [...g, { word, correct: false }];
-        });
-
         setTimeLeft(0);
         setStatus("finished");
         return;
       }
 
+      // full seconds only
       setTimeLeft(Math.ceil(remainingMs / 1000));
-    }, 250);
+    }, 250); // small tick ensures smooth countdown
 
     return () => clearInterval(interval);
-  }, [status, countdown, cards, index]);
+  }, [status, countdown]);
+
+  /* ---------------- Add last card once when game finishes ---------------- */
+  useEffect(() => {
+    if (status !== "finished") return;
+    if (lastCardAddedRef.current) return;
+
+    const currentWord = cards[index];
+    if (!currentWord) return;
+
+    setGuesses((g) => {
+      if (g.some((x) => x.word === currentWord)) return g;
+      return [...g, { word: currentWord, correct: false }];
+    });
+
+    lastCardAddedRef.current = true;
+  }, [status, cards, index]);
 
   /* ---------------- Start game ---------------- */
   const startGame = (deck: Deck) => {
     if (!deck.cards.length) return;
 
     endTimeRef.current = null;
+    lastCardAddedRef.current = false;
 
     setSelectedDeck(deck);
     setCards(shuffle(deck.cards));
@@ -113,6 +125,7 @@ export default function App() {
         guesses={guesses}
         onBackToLibrary={() => {
           endTimeRef.current = null;
+          lastCardAddedRef.current = false;
           setSelectedDeck(null);
           setGuesses([]);
           setCards([]);
@@ -125,6 +138,7 @@ export default function App() {
           if (!selectedDeck) return;
 
           endTimeRef.current = null;
+          lastCardAddedRef.current = false;
           setCards(shuffle(selectedDeck.cards));
           setGuesses([]);
           setIndex(0);

@@ -18,7 +18,7 @@ export function GameScreen({
       {/* Timer: always takes space, hidden visually during countdown */}
       <div
         className="timer"
-        style={{ opacity: countdown !== undefined ? 0 : 1 }}
+        style={{ display: countdown !== undefined ? "none" : "flex" }}
       >
         {timeLeft}
       </div>
@@ -28,7 +28,7 @@ export function GameScreen({
         {countdown !== undefined ? (
           <div className="flex column">
             <h1>Get ready</h1>
-            <h1 >{countdown}</h1>
+            <h1>{countdown}</h1>
           </div>
         ) : (
           card
@@ -37,7 +37,7 @@ export function GameScreen({
       {/* Controls */}
       <div
         className="controls"
-        style={{ opacity: countdown !== undefined ? 0 : 1 }}
+        style={{ display: countdown !== undefined ? "none" : "flex" }}
       >
         <button onClick={onPass}>Pass</button>
         <button onClick={onCorrect}>Correct</button>
