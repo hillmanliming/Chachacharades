@@ -8,11 +8,14 @@ type Props = {
 export function DeckLibrary({ decks, onSelect }: Props) {
   return (
     <div className="screen">
-      <h1>Cha-Cha-Charades</h1>
+      <h1>Your decks</h1>
       <ul className="deck-list">
         {decks.map((deck) => (
           <li key={deck.id}>
-            <button onClick={() => onSelect(deck)}>{deck.name}</button>
+            <article onClick={() => onSelect(deck)}>
+              <span className="emoji">{deck.emoji}</span>
+              <span>{deck.name}</span>
+            </article>
           </li>
         ))}
       </ul>

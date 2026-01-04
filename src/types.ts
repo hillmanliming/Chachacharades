@@ -1,6 +1,7 @@
 export type Deck = {
   id: string;
   name: string;
+  emoji: string;
   cards: string[];
 };
 

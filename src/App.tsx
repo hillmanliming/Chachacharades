@@ -6,7 +6,7 @@ import { DeckLibrary } from "./components/DeckLibrary";
 import { GameScreen } from "./components/GameScreen";
 import { ResultScreen } from "./components/ResultScreen";
 
-const GAME_DURATION = 60;
+const GAME_DURATION = 60; // in seconds
 
 export default function App() {
   const [status, setStatus] = useState<"idle" | "playing" | "finished">("idle");
@@ -15,24 +15,33 @@ export default function App() {
   const [index, setIndex] = useState(0);
   const [guesses, setGuesses] = useState<Guess[]>([]);
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
-  const [countdown, setCountdown] = useState<number | null>(null);
+  const [countdown, setCountdown] = useState<number | null>(3);
 
+  // Countdown effect
   useEffect(() => {
-    if (status !== "playing") return;
-    if (countdown !== null) return; // WAIT for countdown
+    if (countdown === null) return;
+
+    const timer = setTimeout(() => {
+      setCountdown((prev) => (prev && prev > 1 ? prev - 1 : null));
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [countdown]);
+
+  // Game timer
+  useEffect(() => {
+    if (status !== "playing" || countdown !== null) return;
 
     const timer = setInterval(() => {
       setTimeLeft((t) => {
         if (t <= 1) {
           clearInterval(timer);
-
-          // Add current card as "unanswered" if not already guessed
+          // Mark current card as incorrect if not guessed
           setGuesses((g) => {
             const currentWord = cards[index];
-            if (g.some((x) => x.word === currentWord)) return g; // already guessed
+            if (g.some((x) => x.word === currentWord)) return g;
             return [...g, { word: currentWord, correct: false }];
           });
-
           setStatus("finished");
           return 0;
         }
@@ -43,66 +52,38 @@ export default function App() {
     return () => clearInterval(timer);
   }, [status, countdown, cards, index]);
 
-  useEffect(() => {
-    if (countdown === null) return;
-
-    if (countdown === 1) {
-      // After showing 1 for 1 second, end countdown
-      const timer = setTimeout(() => setCountdown(null), 1000);
-      return () => clearTimeout(timer);
-    }
-
-    // Normal countdown decrement for 3 → 2
-    const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [countdown]);
   const startGame = (deck: Deck) => {
-    if (deck.cards.length === 0) return;
+    if (!deck.cards.length) return;
     setSelectedDeck(deck);
     setCards(shuffle(deck.cards));
     setGuesses([]);
     setIndex(0);
     setTimeLeft(GAME_DURATION);
-    setCountdown(3); // start countdown
+    setCountdown(3);
     setStatus("playing");
   };
 
   const handleGuess = (correct: boolean) => {
     setGuesses((g) => [...g, { word: cards[index], correct }]);
-
-    // If this was the last card, finish the game
-    if (index + 1 >= cards.length) {
-      setStatus("finished");
-    } else {
-      setIndex((i) => i + 1);
-    }
+    setIndex((i) => (i + 1 >= cards.length ? i : i + 1));
+    if (index + 1 >= cards.length) setStatus("finished");
   };
-  if (status === "idle") {
+
+  if (status === "idle")
     return <DeckLibrary decks={decks} onSelect={startGame} />;
-  }
 
-  if (status === "playing") {
-    if (!selectedDeck) return null;
-
-    if (countdown !== null) {
-      return (
-        <div className="screen">
-          <h1>Get Ready!</h1>
-          <div className="countdown">{countdown}</div>
-        </div>
-      );
-    }
-
+  if (status === "playing" && selectedDeck)
     return (
       <GameScreen
         card={cards[index]}
         timeLeft={timeLeft}
+        countdown={countdown ?? undefined}
         onCorrect={() => handleGuess(true)}
         onPass={() => handleGuess(false)}
       />
     );
-  }
-  if (status === "finished") {
+
+  if (status === "finished")
     return (
       <ResultScreen
         guesses={guesses}
@@ -112,22 +93,20 @@ export default function App() {
           setCards([]);
           setIndex(0);
           setTimeLeft(GAME_DURATION);
+          setCountdown(3);
           setStatus("idle");
         }}
         onPlayAgain={() => {
           if (!selectedDeck) return;
-
-          // Restart the same deck
-          setCards(shuffle(selectedDeck.cards)); // reshuffle
+          setCards(shuffle(selectedDeck.cards));
           setGuesses([]);
           setIndex(0);
           setTimeLeft(GAME_DURATION);
-          setCountdown(3); // trigger 3s countdown
-          setStatus("playing"); // ensure status is "playing"
+          setCountdown(3);
+          setStatus("playing");
         }}
       />
     );
-  }
 
   return null;
 }

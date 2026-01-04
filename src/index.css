@@ -1,67 +1,138 @@
-body {
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  padding: 0;
   margin: 0;
+}
+
+html {
+  height: 100%;
+}
+
+body {
   font-family: system-ui, sans-serif;
+  background-color: #008e97;
+  color: white;
 }
 
 .screen {
-  padding: 1rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
+  padding: 5% 10%;
+}
+
+.card div:first-child {
+  font-size: 2rem; /* "Get ready" size */
+}
+
+.card div:last-child {
+  font-size: 5rem; /* countdown size */
+  margin-top: 0.5rem;
+}
+.game-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 5%;
+}
+
+h1 {
+  font-size: 3rem;
+  text-shadow: 4px 4px #005778;
 }
 
 .deck-list {
   list-style: none;
-  padding: 0;
-}
-
-.deck-list button {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  place-items: center;
+  gap: 1rem;
   width: 100%;
-  padding: 1rem;
-  margin-bottom: 0.75rem;
-  font-size: 1.2rem;
+  margin: 10%;
 }
 
-.landscape {
+.deck-list li {
+  width: 100%;
+}
+
+.timer {
+  color: white;
+  font-weight: bold;
+}
+.deck-list article {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background-color: #e6e6e6;
+  border-radius: 25px;
+  color: black;
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  padding: 1rem;
+  cursor: pointer;
+  border: 3px solid #fc4c02;
+  box-shadow: 4px 4px #005778;
+}
+
+.deck-list article .emoji {
+  font-size: 2rem;
+  margin-bottom: 0.3rem;
 }
 
 .card {
   font-size: 3rem;
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
 }
 
-.controls button {
-  padding: 1rem;
-  font-size: 1.2rem;
-  margin: 0.5rem;
+.navy {
+  color: #005778;
 }
 
 .results {
   list-style: none;
-  padding: 0;
+  font-size: 1.5rem;
+  margin: 2rem 0;
 }
 
 .correct {
-  color: green;
+  color: rgb(255, 255, 255);
 }
 
 .incorrect {
-  color: red;
+  color: rgba(255, 255, 255, 0.5);
 }
 
-.result-buttons {
+.controls {
   display: flex;
   justify-content: center;
   gap: 1rem;
-  margin-top: 1rem;
+  margin-top: auto;
 }
 
-.result-buttons button {
+button {
   padding: 1rem 2rem;
-  font-size: 1.2rem;
-  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 50px;
+  border: 0;
+  box-shadow: 4px 4px #005778;
+  background-color: #e6e6e6;
+  border: 3px solid #fc4c02;
+}
+
+button:hover {
+  cursor: pointer;
 }
 
 .countdown {

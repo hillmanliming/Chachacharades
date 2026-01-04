@@ -7,9 +7,13 @@ type Props = {
 };
 
 export function ResultScreen({ guesses, onBackToLibrary, onPlayAgain }: Props) {
+  const score = guesses.filter((g) => g.correct).length;
+
   return (
-    <div className="screen">
-      <h1>Results</h1>
+    <div className="screen game-screen">
+      <header>
+        <h1>Score: {score}</h1>
+      </header>
 
       <ul className="results">
         {guesses.map((g, i) => (
@@ -19,10 +23,10 @@ export function ResultScreen({ guesses, onBackToLibrary, onPlayAgain }: Props) {
         ))}
       </ul>
 
-      <div className="result-buttons">
-        <button onClick={onBackToLibrary}>Back to Library</button>
+      <footer className="controls">
+        <button onClick={onBackToLibrary}>Home</button>
         <button onClick={onPlayAgain}>Play Again</button>
-      </div>
+      </footer>
     </div>
   );
 }
