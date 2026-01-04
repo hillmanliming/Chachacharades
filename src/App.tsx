@@ -1,14 +1,20 @@
 import { useEffect, useState } from "react";
 import { defaultDeck } from "./data/animalsDeck";
-import type { GameState } from "./types";
+import type { GameStatus } from "./types";
+
+import { StartScreen } from "./components/StartScreen";
+import { GameScreen } from "./components/GameScreen";
+import { ResultScreen } from "./components/ResultScreen";
+import { shuffle } from "./utils/shuffle";
 
 const GAME_DURATION = 60;
 
 function App() {
-  const [status, setStatus] = useState<GameState>("idle");
+  const [status, setStatus] = useState<GameStatus>("idle");
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
+  const [cards, setCards] = useState<string[]>([]);
 
   useEffect(() => {
     if (status !== "playing") return;
@@ -26,38 +32,44 @@ function App() {
     return () => clearInterval(timer);
   }, [status]);
 
+  useEffect(() => {
+    if (status === "playing" && index >= cards.length) {
+      setStatus("finished");
+    }
+  }, [index, status, cards.length]);
+
   const startGame = () => {
+    setCards(shuffle(defaultDeck.cards));
     setStatus("playing");
     setTimeLeft(GAME_DURATION);
     setIndex(0);
     setScore(0);
   };
 
-  const nextCard = (correct: boolean) => {
-    if (correct) setScore((s) => s + 1);
+  const handleCorrect = () => {
+    setScore((s) => s + 1);
+    setIndex((i) => i + 1);
+  };
+
+  const handlePass = () => {
     setIndex((i) => i + 1);
   };
 
   if (status === "idle") {
-    return <button onClick={startGame}>Start</button>;
+    return <StartScreen onStart={startGame} />;
   }
 
   if (status === "finished") {
-    return (
-      <>
-        <h1>Score: {score}</h1>
-        <button onClick={startGame}>Play again</button>
-      </>
-    );
+    return <ResultScreen score={score} onRestart={startGame} />;
   }
 
   return (
-    <>
-      <h2>{timeLeft}s</h2>
-      <h1>{defaultDeck.cards[index]}</h1>
-      <button onClick={() => nextCard(true)}>✔</button>
-      <button onClick={() => nextCard(false)}>✖</button>
-    </>
+    <GameScreen
+      card={cards[index]}
+      timeLeft={timeLeft}
+      onCorrect={handleCorrect}
+      onPass={handlePass}
+    />
   );
 }
 

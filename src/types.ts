@@ -4,4 +4,4 @@ export type Deck = {
   cards: string[];
 };
 
-export type GameState = "idle" | "playing" | "finished";
+export type GameStatus = "idle" | "playing" | "finished";
